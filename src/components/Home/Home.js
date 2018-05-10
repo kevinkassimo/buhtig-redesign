@@ -11,8 +11,9 @@ class Home extends Component {
     return (
       <div>
         <Card>
-          CArd
+          Card
         </Card>
+        <a href="https://github.com/login/oauth/authorize?client_id=bf77f91ed090876cc930&scope=&">OAuth</a>
       </div>
     )
   }

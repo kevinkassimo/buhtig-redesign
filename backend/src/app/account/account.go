@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
@@ -16,6 +17,7 @@ import (
 
 	"app/constant"
 	"app/githubUrl"
+	"app/handler"
 )
 
 type User struct {
@@ -34,38 +36,14 @@ type userData struct {
 	AvatarURL string `json:"avatar_url"`
 }
 
-func sendJson(w http.ResponseWriter, jsonBytes []byte) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonBytes)
-}
-
-func sendErrorJson(w http.ResponseWriter, errCode int, errorText string) {
-	w.WriteHeader(errCode)
-	errorJson, _ := json.Marshal(&errorStruct{
-		Error: errorText,
-	})
-	sendJson(w, errorJson)
-}
-
-func sendBadRequest(w http.ResponseWriter, errorText string) {
-	sendErrorJson(w, http.StatusBadRequest, errorText)
-}
-
-func sendNotFound(w http.ResponseWriter, errorText string) {
-	sendErrorJson(w, http.StatusNotFound, errorText)
-}
-
-func sendServerError(w http.ResponseWriter, errorText string) {
-	sendErrorJson(w, http.StatusInternalServerError, errorText)
-}
-
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jwtCookie, err := r.Cookie("jwt")
 		if err != nil {
-			sendBadRequest(w, "no jwt present")
+			handler.SendBadRequest(w, "no jwt present")
 			return
 		}
+
 		token, err := jwt.Parse(jwtCookie.Value, func(token *jwt.Token) (interface{}, error) {
 			// Don't forget to validate the alg is what you expect:
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -75,12 +53,17 @@ func authMiddleware(next http.Handler) http.Handler {
 			// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 			return []byte(constant.JWT_KEY), nil
 		})
+
+		if err != nil {
+			handler.SendBadRequest(w, "bad jwt")
+			return
+		}
 	
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			context.Set(r, "login", claims["login"]) // set context
 			next.ServeHTTP(w, r)
 		} else {
-			sendBadRequest(w, "bad jwt")
+			handler.SendBadRequest(w, "bad jwt")
 			return
 		}
 	})
@@ -102,11 +85,11 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 
 	s := router.PathPrefix("/account").Subrouter()
 
-	s.HandleFunc("/auth_code", func(w http.ResponseWriter, r *http.Request) {
+	s.Path("/auth_code").Queries("code", "{code}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		code, ok := vars["code"]
 		if !ok {
-			sendBadRequest(w, "no code provided")
+			handler.SendBadRequest(w, "no code provided")
 			return
 		}
 
@@ -124,14 +107,14 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 			bytes.NewReader([]byte(params.Encode())),
 		)
 		if err != nil {
-			sendServerError(w, "request error: "+err.Error())
+			handler.SendServerError(w, "request error: "+err.Error())
 			return
 		}
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		req.Header.Add("Accept", "application/json")
 		resp, err := httpClient.Do(req)
 		if err != nil {
-			sendServerError(w, "cannot get access token: "+err.Error())
+			handler.SendServerError(w, "cannot get access token: "+err.Error())
 			return
 		}
 
@@ -144,7 +127,7 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 		body, err := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 		if err != nil {
-			sendServerError(w, "cannot get access token: "+err.Error())
+			handler.SendServerError(w, "cannot get access token: "+err.Error())
 			return
 		}
 		authJson := &oauthResp{
@@ -154,7 +137,7 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 		}
 		err = json.Unmarshal(body, &authJson)
 		if err != nil {
-			sendServerError(w, "cannot get access token: "+err.Error())
+			handler.SendServerError(w, "cannot get access token: "+err.Error())
 			return
 		}
 
@@ -166,20 +149,20 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 			nil,
 		)
 		if err != nil {
-			sendServerError(w, "request error: "+err.Error())
+			handler.SendServerError(w, "request error: "+err.Error())
 			return
 		}
 
 		dataResp, err := httpClient.Do(dataReq)
 		if err != nil {
-			sendServerError(w, "cannot get access token: "+err.Error())
+			handler.SendServerError(w, "cannot get access token: "+err.Error())
 			return
 		}
 
 		body, err = ioutil.ReadAll(dataResp.Body)
 		defer dataResp.Body.Close()
 		if err != nil {
-			sendServerError(w, "cannot get user data: "+err.Error())
+			handler.SendServerError(w, "cannot get user data: "+err.Error())
 			return
 		}
 		userDataJson := &userData{
@@ -188,18 +171,18 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 		}
 		err = json.Unmarshal(body, &userDataJson)
 		if err != nil {
-			sendServerError(w, "cannot get user data: "+err.Error())
+			handler.SendServerError(w, "cannot get user data: "+err.Error())
 			return
 		}
 
 		if userDataJson.Login == "" { // no login data
-			sendServerError(w, "cannot get user data: no login provided")
+			handler.SendServerError(w, "cannot get user data: no login provided")
 			return
 		}
 		var userResults []User
 		err = coll.Find(bson.M{"login": userDataJson.Login}).All(&userResults)
 		if err != nil {
-			sendServerError(w, "mongo error: "+err.Error())
+			handler.SendServerError(w, "mongo error: "+err.Error())
 			return
 		}
 		if len(userResults) == 0 { // has NO user
@@ -210,7 +193,7 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 				Token:     authJson.AccessToken,
 			})
 			if err != nil {
-				sendServerError(w, "mongo error: "+err.Error())
+				handler.SendServerError(w, "mongo error: "+err.Error())
 				return
 			}
 		} else { // has user
@@ -219,7 +202,7 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 				bson.M{"$set": bson.M{"avatarUrl": userDataJson.AvatarURL, "token": authJson.AccessToken}},
 			)
 			if err != nil {
-				sendServerError(w, "mongo error: "+err.Error())
+				handler.SendServerError(w, "mongo error: "+err.Error())
 				return
 			}
 		}
@@ -227,41 +210,50 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 		token := jwt.New(jwt.SigningMethodHS256)
 		claims := token.Claims.(jwt.MapClaims)
 		claims["login"] = userDataJson.Login
-		tokenString, _ := token.SignedString(constant.JWT_KEY)
+		tokenString, err := token.SignedString([]byte(constant.JWT_KEY))
 
-		respJsonString, err := json.Marshal(userDataJson)
 		if err != nil {
-			sendServerError(w, "marshal failed: "+err.Error())
+			handler.SendServerError(w, "sign failed: "+err.Error())
 			return
 		}
 
-		http.SetCookie(w, &http.Cookie{Name: "jwt", Value: tokenString,})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(respJsonString))
-	})
+		respJsonString, err := json.Marshal(userDataJson)
+		if err != nil {
+			handler.SendServerError(w, "marshal failed: "+err.Error())
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name: "jwt",
+			Value: tokenString,
+			Expires: time.Now().Add(365 * 24 * time.Hour),
+			MaxAge: 50000,
+			Path: "/",
+		})
+		handler.SendJson(w, respJsonString)
+	}).Methods("GET")
 
 	s.Handle("/user", authMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		loginID := context.Get(r, "login")
 		var userResults []User
 		err := coll.Find(bson.M{"login": loginID}).All(&userResults)
 		if err != nil {
-			sendServerError(w, "mongo error: "+err.Error())
+			handler.SendServerError(w, "mongo error: "+err.Error())
 			return
 		}
 		if len(userResults) == 0 { // has NO user
 			// Insert new user
-			sendNotFound(w, "user not exist")
+			handler.SendNotFound(w, "user not exist")
 			return
 		} else { // has user
 			user := userResults[0]
 			userDataString, err := json.Marshal(&userData{Login: user.Login, AvatarURL: user.AvatarURL,})
 			if err != nil {
-				sendServerError(w, "marshal error: "+err.Error())
+				handler.SendServerError(w, "marshal error: "+err.Error())
 				return
 			}
-			
-			w.Header().Set("Content-Type", "application/json")
-			w.Write([]byte(userDataString))
+
+			handler.SendJson(w, userDataString)
 		}
-	})))
+	}))).Methods("GET")
 }
