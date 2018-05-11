@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"net/http"
 	"encoding/json"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -11,7 +11,7 @@ type errorStruct struct {
 	Error string `json:"error"`
 }
 
-func isDev() bool {
+func IsDev() bool {
 	for _, e := range os.Environ() {
 		pair := strings.Split(e, "=")
 		if pair[0] == "DEV" && pair[1] == "1" {
@@ -22,7 +22,7 @@ func isDev() bool {
 }
 
 func setDevCORS(w http.ResponseWriter) {
-	if isDev() {
+	if IsDev() {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 	}
@@ -31,7 +31,7 @@ func setDevCORS(w http.ResponseWriter) {
 func SendJson(w http.ResponseWriter, jsonBytes []byte) {
 	w.Header().Set("Content-Type", "application/json")
 	setDevCORS(w)
-	if isDev() {
+	if IsDev() {
 		print(string(jsonBytes))
 	}
 	w.Write(jsonBytes)
@@ -41,7 +41,7 @@ func SendOKJson(w http.ResponseWriter, jsonBytes []byte) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	setDevCORS(w)
-	if isDev() {
+	if IsDev() {
 		print(string(jsonBytes))
 	}
 	w.Write(jsonBytes)

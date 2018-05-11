@@ -1,5 +1,12 @@
 import React, { Component } from 'react';
-import { Navbar, NavItem, NavbarBrand, NavLink } from 'reactstrap';
+import { AppBar, Avatar } from 'material-ui'
+// import Avatar from 'material-ui/Avatar';
+
+const HeaderRightIcon = ({ avatar }) => {
+  return (
+    <img src={avatar || '/user.png'} className="header__icon" />
+  )
+};
 
 class Header extends Component {
   constructor(props) {
@@ -8,13 +15,12 @@ class Header extends Component {
 
   render() {
     return (
-      <Navbar color="light">
-        <NavbarBrand href="#">buHtiG</NavbarBrand>
-        <NavItem>
-          <NavLink href="https://github.com/kevinkassimo/buhtig">Github</NavLink>
-        </NavItem>
-      </Navbar>
-    );
+      <AppBar
+        className="header"
+        title="buHtiG"
+        iconElementRight={<Avatar src={this.props.avatar || '/user.png'} />}
+        />
+    )
   }
 }
 

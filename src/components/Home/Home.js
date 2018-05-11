@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Card } from 'reactstrap';
-import styled from 'styled-components';
+import RaisedButton from 'material-ui/RaisedButton';
+import FontIcon from 'material-ui/FontIcon';
 
 class Home extends Component {
   constructor(props) {
@@ -10,10 +10,14 @@ class Home extends Component {
   render() {
     return (
       <div>
-        <Card>
-          Card
-        </Card>
-        <a href="https://github.com/login/oauth/authorize?client_id=bf77f91ed090876cc930&scope=&">OAuth</a>
+        <RaisedButton
+          href="https://github.com/login/oauth/authorize?client_id=bf77f91ed090876cc930&scope="
+          label="Start"
+          secondary={true}
+          // style={styles.button}
+          icon={<FontIcon className="muidocs-icon-custom-github" />}
+        />
+        {/*<a href="https://github.com/login/oauth/authorize?client_id=bf77f91ed090876cc930&scope=">OAuth</a>*/}
       </div>
     )
   }

@@ -145,7 +145,7 @@ func NewAPIRouter(router *mux.Router, session *mgo.Session) {
 		}
 		
 		handler.SendJson(w, []byte(totalCommitJsonString))
-	}))
+	})).Methods("GET")
 
 	s.Path("/commit").Queries("owner", "{owner}", "repo", "{repo}", "total", "{total}", "which", "{which}").Handler(bindMiddleware(coll, func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -247,5 +247,5 @@ func NewAPIRouter(router *mux.Router, session *mgo.Session) {
 		}
 
 		handler.SendOKJson(w, respJsonString)
-	}))
+	})).Methods("GET")
 }

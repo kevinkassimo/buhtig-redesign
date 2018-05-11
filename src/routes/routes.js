@@ -1,24 +1,25 @@
 import React from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import queryString from 'query-string';
 
 import Footer from '../components/Footer/Footer';
-import Header from '../components/Header/Header';
 import Home from '../components/Home/Home';
 import Dashboard from '../components/Dashboard/Dashboard';
-import Code from "../components/Code/Code";
+import CodeContainer from "../containers/CodeContainer";
+import HeaderContainer from '../containers/HeaderContainer';
+import SearchContainer from '../containers/SearchContainer';
 
 
 const Routes = ({ props }) => (
   <div>
-    <Route path="/" component={Header}/>
+    <Route path="/" component={HeaderContainer}/>
     <Switch>
       <Route exact path="/" component={Home} />
       <Route exact path="/code" render={(props) => {
         let params = queryString.parse(props.location.search);
-        return <Code code={params.code}/>;
+        return <CodeContainer code={params.code}/>;
       }} />
-      <Route path="/search" component={Dashboard}/>
+      <Route path="/search" component={SearchContainer}/>
     </Switch>
     <Route path="/" component={Footer} />
   </div>

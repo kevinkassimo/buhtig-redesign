@@ -1,19 +1,19 @@
 package account
 
 import (
-	"fmt"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/context"
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
 
 	"app/constant"
 	"app/githubUrl"
@@ -22,9 +22,9 @@ import (
 
 type User struct {
 	ID        bson.ObjectId `bson:"_id,omitempty"`
-	Login     string `bson:"login"`
-	AvatarURL string `bson:"avatarUrl"`
-	Token     string `bson:"token"`
+	Login     string        `bson:"login"`
+	AvatarURL string        `bson:"avatarUrl"`
+	Token     string        `bson:"token"`
 }
 
 type errorStruct struct {
@@ -49,7 +49,7 @@ func authMiddleware(next http.Handler) http.Handler {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
-	
+
 			// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 			return []byte(constant.JWT_KEY), nil
 		})
@@ -58,7 +58,7 @@ func authMiddleware(next http.Handler) http.Handler {
 			handler.SendBadRequest(w, "bad jwt")
 			return
 		}
-	
+
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			context.Set(r, "login", claims["login"]) // set context
 			next.ServeHTTP(w, r)
@@ -141,7 +141,7 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 			return
 		}
 
-		accessTokenQuery := url.Values{"access_token": {authJson.AccessToken},}.Encode()
+		accessTokenQuery := url.Values{"access_token": {authJson.AccessToken}}.Encode()
 
 		dataReq, err := http.NewRequest(
 			"GET",
@@ -224,14 +224,14 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name: "jwt",
-			Value: tokenString,
+			Name:    "jwt",
+			Value:   tokenString,
 			Expires: time.Now().Add(365 * 24 * time.Hour),
-			MaxAge: 50000,
-			Path: "/",
+			MaxAge:  50000,
+			Path:    "/",
 		})
 		handler.SendJson(w, respJsonString)
-	}).Methods("GET")
+	}).Methods("POST")
 
 	s.Handle("/user", authMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		loginID := context.Get(r, "login")
@@ -247,7 +247,7 @@ func NewAccountRouter(router *mux.Router, session *mgo.Session) {
 			return
 		} else { // has user
 			user := userResults[0]
-			userDataString, err := json.Marshal(&userData{Login: user.Login, AvatarURL: user.AvatarURL,})
+			userDataString, err := json.Marshal(&userData{Login: user.Login, AvatarURL: user.AvatarURL})
 			if err != nil {
 				handler.SendServerError(w, "marshal error: "+err.Error())
 				return
