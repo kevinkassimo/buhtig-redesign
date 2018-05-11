@@ -22,12 +22,13 @@ class Search extends Component {
     return (
       <div>
         {repoState.step === 0 &&
-          <CommitSelection
+          <RepoValidation
             repoState={repoState}
             submitRepo={submitRepo} />
         }
         {repoState.step === 1 &&
-          <RepoValidation
+          <CommitSelection
+            repoState={repoState}
             goBack={goToPrevStep}
             submitCommit={submitCommit} />
         }

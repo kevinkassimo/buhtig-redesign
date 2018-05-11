@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Search from '../components/Search/Search';
-import { getNextCommit, getPrevCommit, submitCommit, submitRepo } from '../redux/repo/index';
+import { actions } from '../redux';
 
 const mapStateToProps = (state) => {
   return {
@@ -11,10 +11,11 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    submitRepo: (owner, repo) => dispatch(submitRepo(owner, repo)),
-    submitCommit: (commit) => dispatch(submitCommit(commit)),
-    getNextCommit: () => dispatch(getNextCommit()),
-    getPrevCommit: () => dispatch(getPrevCommit()),
+    notifyError: (message) => dispatch(actions.notifyError(message)),
+    submitRepo: (owner, repo, branch = '') => dispatch(actions.submitRepo(owner, repo, branch)),
+    submitCommit: (commit) => dispatch(actions.submitCommit(commit)),
+    getNextCommit: () => dispatch(actions.getNextCommit()),
+    getPrevCommit: () => dispatch(actions.getPrevCommit()),
   };
 };
 

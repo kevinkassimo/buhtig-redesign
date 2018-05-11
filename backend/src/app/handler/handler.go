@@ -39,8 +39,8 @@ func SendJson(w http.ResponseWriter, jsonBytes []byte) {
 
 func SendOKJson(w http.ResponseWriter, jsonBytes []byte) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	setDevCORS(w)
+	w.WriteHeader(http.StatusOK)
 	if IsDev() {
 		print(string(jsonBytes))
 	}
@@ -48,11 +48,16 @@ func SendOKJson(w http.ResponseWriter, jsonBytes []byte) {
 }
 
 func SendErrorJson(w http.ResponseWriter, errCode int, errorText string) {
-	w.WriteHeader(errCode)
+	w.Header().Set("Content-Type", "application/json")
 	errorJson, _ := json.Marshal(&errorStruct{
 		Error: errorText,
 	})
-	SendJson(w, errorJson)
+	setDevCORS(w)
+	w.WriteHeader(errCode)
+	if IsDev() {
+		print(string(errorJson))
+	}
+	w.Write(errorJson)
 }
 
 func SendBadRequest(w http.ResponseWriter, errorText string) {

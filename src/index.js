@@ -8,6 +8,7 @@ import './index.css';
 import createHistory from 'history/createBrowserHistory'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import {reducer as notificationsReducer } from 'reapop';
 import registerServiceWorker from './registerServiceWorker';
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
@@ -24,6 +25,7 @@ const store = createStore(
   combineReducers({
     user: reducers.LoginReducer,
     repo: reducers.RepoReducer,
+    notifications: notificationsReducer(),
     routing: routerReducer,
   }),
   composeEnhancers(applyMiddleware(...middleware))

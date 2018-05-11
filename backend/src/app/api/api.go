@@ -133,6 +133,12 @@ func NewAPIRouter(router *mux.Router, session *mgo.Session) {
 				break
 			}
 		}
+
+		if commitCount < 0 { // change behavior for not found repo
+			handler.SendBadRequest(w, "repo not found")
+			return
+		}
+
 		type totalCommitCountStruct struct {
 			Count int `json:"count"`
 		}

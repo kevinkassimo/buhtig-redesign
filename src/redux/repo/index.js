@@ -1,4 +1,5 @@
-import { notify } from 'reapop';
+import { addNotification as notify } from 'reapop';
+// import { notify } from 'reapop';
 
 const SAVE_REPO_DATA = 'save_repo_data';
 const SAVE_TOTAL_COMMIT = 'save_curr_commit';
@@ -13,18 +14,23 @@ const defaultState = {
   step: 0,
   owner: null,
   repo: null,
+  branch: '',
   total: 0,
   commit: 1,
   cache: [],
   cacheIndex: 0,
-  result: null,
 };
 
-const saveRepoData = (owner, repo) => {
+const notifyError = (message) => {
+  return notify({title: 'Error', status: 'error', message, position: 'tc'});
+};
+
+const saveRepoData = (owner, repo, branch = '') => {
   return {
     type: SAVE_REPO_DATA,
     owner,
     repo,
+    branch,
   };
 };
 
@@ -77,25 +83,25 @@ const isProd = () => {
   return process.env.NODE_ENV === 'production'
 };
 
-const submitRepo = (owner, repo) => {
+const submitRepo = (owner, repo, branch = '') => {
   return async (dispatch, getState) => {
-    let state = getState();
+    let state = getState().repo; // notice should be state.repo!
     if (state.step !== 0) {
-      dispatch(notify({message: "Wrong step!", status: 400}));
+      dispatch(notifyError('Wrong step!'));
       return;
     }
 
     try {
       let url = isProd() ?
-        '/api/' :
+        '/api/total_commit' :
         'http://localhost:8000/api/total_commit';
 
-      let res = await fetch(`${url}?owner=${owner}&repo=${repo}`, {
+      let res = await fetch(`${url}?owner=${owner}&repo=${repo}&sha=${branch}`, {
         method: 'GET',
         credentials: isProd() ? 'same-site' : 'include'
       });
       if (!res.ok) {
-        dispatch(notify({message: "Cannot find repo or an error occurred", status: res.status}));
+        dispatch(notifyError('Cannot find repo/branch, or an error occurred'));
         return;
       }
 
@@ -104,21 +110,21 @@ const submitRepo = (owner, repo) => {
       dispatch(saveTotalCommit(json.count));
       dispatch(nextStep());
     } catch (err) {
-      dispatch(notify({message: "An error occurred", status: 400}));
+      dispatch(notifyError('An error occurred'));
     }
   }
 };
 
 const submitCommit = (commit) => {
   return async (dispatch, getState) => {
-    let state = getState();
+    let state = getState().repo;
     if (state.step !== 1) {
-      dispatch(notify({message: "Wrong step!", status: 400}));
+      dispatch(notifyError('Wrong step!'));
       return;
     }
 
     if (!state.total || commit <= 0 || commit > state.total) {
-      dispatch(notify({message: 'Invalid commit!', status: 400}));
+      dispatch(notifyError('Invalid commit!'));
       return;
     }
 
@@ -126,7 +132,7 @@ const submitCommit = (commit) => {
       dispatch(saveCurrCommit(commit));
 
       let url = isProd() ?
-        '/api/' :
+        '/api/commit' :
         'http://localhost:8000/api/commit';
 
       let res = await fetch(`${url}?owner=${state.owner}&repo=${state.repo}&total=${state.total}&which=${commit}`, {
@@ -134,7 +140,7 @@ const submitCommit = (commit) => {
         credentials: isProd() ? 'same-site' : 'include'
       });
       if (!res.ok) {
-        dispatch(notify({message: "Cannot get commit or an error occurred", status: res.status}));
+        dispatch(notifyError('Cannot get commit, or an error occurred'));
         return;
       }
 
@@ -142,25 +148,25 @@ const submitCommit = (commit) => {
       dispatch(saveCommitResult(json));
       dispatch(nextStep());
     } catch (err) {
-      dispatch(notify({message: "An error occurred", status: 400}));
+      dispatch(notifyError('An error occurred'));
     }
   };
 };
 
-const validateRepo = (owner, repo) => {
+const validateRepo = (owner, repo, branch = '') => {
   return async (dispatch) => {
     let res = {};
     try {
       let url = isProd() ?
-        '/api/' :
+        '/api/total_commit' :
         'http://localhost:8000/api/total_commit';
 
-      res = await fetch(`${url}?owner=${owner}&repo=${repo}`, {
+      res = await fetch(`${url}?owner=${owner}&repo=${repo}&sha=${branch}`, {
         method: 'GET',
         credentials: isProd() ? 'same-site' : 'include'
       });
       if (!res.ok) {
-        dispatch(notify({message: "Cannot find repo or an error occurred", status: res.status}));
+        dispatch(notifyError('Cannot find repo/branch, or an error occurred'));
         return;
       }
 
@@ -168,7 +174,7 @@ const validateRepo = (owner, repo) => {
       dispatch(saveRepoData(owner, repo));
       dispatch(saveTotalCommit(json.count));
     } catch (err) {
-      dispatch(notify({message: "An error occurred", status: res.status || 400}));
+      dispatch(notifyError('An error occurred'));
     }
   }
 };
@@ -179,39 +185,39 @@ const getCurrentCommit = (commit) => {
     try {
       dispatch(saveCurrCommit(commit));
 
-      let state = getState();
+      let state = getState().repo;
       let url = isProd() ?
-        '/api/' :
+        '/api/commit' :
         'http://localhost:8000/api/commit';
 
-      res = await fetch(`${url}?owner=${state.owner}&repo=${state.repo}&total=${state.total}&which=${commit}`, {
+      res = await fetch(`${url}?owner=${state.owner}&repo=${state.repo}&sha=${state.branch}&total=${state.total}&which=${commit}`, {
         method: 'GET',
         credentials: isProd() ? 'same-site' : 'include'
       });
       if (!res.ok) {
-        dispatch(notify({message: "Cannot get commit or an error occurred", status: res.status}));
+        dispatch(notifyError('Cannot get commit or an error occurred'));
         return;
       }
 
       let json = await res.json();
       dispatch(saveCommitResult(json));
     } catch (err) {
-      dispatch(notify({message: "An error occurred", status: res.status || 400}));
+      dispatch(notifyError('An error occurred'));
     }
   };
 };
 
 const getNextCommit = () => {
   return async (dispatch, getState) => {
-    let state = getState();
+    let state = getState().repo;
 
     if (!state.total || !state.commit || state.commit <= 0 || state.commit > state.total) {
-      dispatch(notify({message: 'Invalid commit!', status: 400}));
+      dispatch(notifyError('Invalid commit!'));
       return;
     }
 
     if (state.commit === state.total) {
-      dispatch(notify({message: 'At last commit, cannot go forward', status: 400}));
+      dispatch(notifyError('At last commit, cannot go forward'));
       return;
     }
 
@@ -222,15 +228,15 @@ const getNextCommit = () => {
 
 const getPrevCommit = () => {
   return async (dispatch, getState) => {
-    let state = getState();
+    let state = getState().repo;
 
     if (!state.total || !state.commit || state.commit <= 0 || state.commit > state.total) {
-      dispatch(notify({message: 'Invalid commit!', status: 400}));
+      dispatch(notifyError('Invalid commit!'));
       return;
     }
 
     if (state.commit === 1) {
-      dispatch(notify({message: 'At first commit, cannot go back', status: 400}));
+      dispatch(notifyError('At first commit, cannot go forward'));
       return;
     }
 
@@ -246,6 +252,7 @@ const RepoReducer = (state = defaultState, action) => {
         ...state,
         owner: action.owner,
         repo: action.repo,
+        branch: action.branch || '',
       };
     case SAVE_TOTAL_COMMIT:
       return {
@@ -285,7 +292,7 @@ const RepoReducer = (state = defaultState, action) => {
     case SAVE_COMMIT_RESULT:
       return {
         ...state,
-        result: action.result,
+        cache: action.result,
       };
     case GOTO_PREV_STEP:
       switch (state.step) {
