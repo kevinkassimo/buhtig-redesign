@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import { actions } from '../redux';
 
 export default (WrappedComponent) => {
@@ -8,8 +7,6 @@ export default (WrappedComponent) => {
     componentDidMount() {
       if (!this.props.user.login) {
         this.props.getUserData();
-
-        // this.props.navigateToHome();
       }
     }
 
@@ -27,7 +24,6 @@ export default (WrappedComponent) => {
   const mapDispatchToProps = (dispatch) => {
     return {
       getUserData: () => dispatch(actions.getUserData()),
-      navigateToHome: () => dispatch(push('/')),
     };
   };
   return connect(mapStateToProps, mapDispatchToProps)(AuthenticationWrapper)

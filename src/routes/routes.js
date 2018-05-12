@@ -6,23 +6,23 @@ import theme from 'reapop-theme-wybo';
 
 import Footer from '../components/Footer/Footer';
 import Home from '../components/Home/Home';
-import CodeContainer from "../containers/CodeContainer";
-import HeaderContainer from '../containers/HeaderContainer';
-import SearchContainer from '../containers/SearchContainer';
+import CodeContainer from "../components/Code/Code";
+import Header from '../components/Header/Header';
+import Search from '../components/Search/Search';
 import Authenticate from '../containers/Authenticate';
 
 
 const Routes = ({ props }) => (
   <div>
-    <Route path="/" component={HeaderContainer}/>
     <NotificationsSystem theme={theme} />
+    <Route path="/" component={Header} />
     <Switch>
       <Route exact path="/" component={Home} />
       <Route exact path="/code" render={(props) => {
         let params = queryString.parse(props.location.search);
-        return <CodeContainer code={params.code}/>;
+        return <CodeContainer code={params.code} />;
       }} />
-      <Route path="/search" component={Authenticate(SearchContainer)}/>
+      <Route path="/search" component={Authenticate(Search)} />
     </Switch>
     <Route path="/" component={Footer} />
   </div>

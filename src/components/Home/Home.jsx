@@ -14,10 +14,8 @@ class Home extends Component {
           href="https://github.com/login/oauth/authorize?client_id=bf77f91ed090876cc930&scope="
           label="Start"
           secondary={true}
-          // style={styles.button}
           icon={<FontIcon className="muidocs-icon-custom-github" />}
         />
-        {/*<a href="https://github.com/login/oauth/authorize?client_id=bf77f91ed090876cc930&scope=">OAuth</a>*/}
       </div>
     )
   }

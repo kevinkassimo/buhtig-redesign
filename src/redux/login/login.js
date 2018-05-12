@@ -15,7 +15,8 @@ const saveUserData = (data) => {
 };
 
 const isProd = () => {
-  return process.env.NODE_ENV === 'production'
+  // in .env, only REACT_APP_* is imported
+  return process.env.REACT_APP_NODE_ENV === 'production'
 };
 
 const completeOAuth = (code) => {
@@ -27,17 +28,17 @@ const completeOAuth = (code) => {
 
       let res = await fetch(`${url}?code=${code}`, {
         method: 'POST',
-        credentials: isProd() ? 'same-site' : 'include'
+        credentials: isProd() ? 'same-site' : 'include',
       });
       if (!res.ok) {
         dispatch(push('/'));
-        return
+        return;
       }
       let json = await res.json();
       dispatch(saveUserData(json));
-      dispatch(push('/search'))
+      dispatch(push('/search'));
     } catch (err) {
-      dispatch(push('/'))
+      dispatch(push('/'));
     }
   }
 };

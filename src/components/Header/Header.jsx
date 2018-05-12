@@ -1,12 +1,6 @@
 import React, { Component } from 'react';
 import { AppBar, Avatar } from 'material-ui'
-// import Avatar from 'material-ui/Avatar';
-
-const HeaderRightIcon = ({ avatar }) => {
-  return (
-    <img src={avatar || '/user.png'} className="header__icon" />
-  )
-};
+import { connect } from 'react-redux';
 
 class Header extends Component {
   constructor(props) {
@@ -24,4 +18,10 @@ class Header extends Component {
   }
 }
 
-export default Header;
+const mapStateToProps = (state) => {
+  return {
+    avatar: state.user.avatar || null,
+  };
+};
+
+export default connect(mapStateToProps)(Header)

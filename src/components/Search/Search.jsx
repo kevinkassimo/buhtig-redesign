@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
 import CommitSelection from './CommitSelection';
 import RepoValidation from './RepoValidation';
 import ResultView from './ResultView';
+import { actions } from '../../redux';
 
 class Search extends Component {
   constructor(props) {
@@ -31,4 +34,18 @@ class Search extends Component {
   }
 }
 
-export default Search;
+const mapStateToProps = (state) => {
+  return {
+    repoState: state.repo,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    notifyError: (message) => dispatch(actions.notifyError(message)),
+    submitRepo: (owner, repo, branch = '') => dispatch(actions.submitRepo(owner, repo, branch)),
+    submitCommitSelection: (commit) => dispatch(actions.submitCommitSelection(commit)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Search);

@@ -31,12 +31,12 @@ class ResultView extends Component {
           <ContentUndo />
         </FloatingActionButton>
         <div>
-          <img src={entry.author.avatar_url} />
+          <img src={entry.author.avatar_url} alt="author avatar" />
           <p>{entry.author.login}</p>
         </div>
         {entry.author.login !== entry.committer.login &&
         <div>
-          <img src={entry.committer.avatar_url} />
+          <img src={entry.committer.avatar_url} alt="committer avatar" />
           <p>{entry.committer.login}</p>
         </div>
         }

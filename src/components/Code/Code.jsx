@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { actions } from '../redux'
+import { actions } from '../../redux/index'
 import { connect } from 'react-redux';
 
 class Code extends Component {

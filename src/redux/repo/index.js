@@ -1,11 +1,8 @@
 import { addNotification as notify } from 'reapop';
-// import { notify } from 'reapop';
 
 const SAVE_REPO_DATA = 'save_repo_data';
 const SAVE_TOTAL_COMMIT = 'save_total_commit';
 const SAVE_CACHED_COMMIT_INDEX_UPDATE = 'save_cached_commit_index_update';
-const GOTO_NEXT_COMMIT = 'goto_next_commit';
-const GOTO_PREV_COMMIT = 'goto_prev_commit';
 const SAVE_COMMIT_RESULT = 'save_commit_result';
 const GOTO_PREV_STEP = 'goto_prev_step';
 const GOTO_NEXT_STEP = 'goto_next_step';
@@ -56,18 +53,6 @@ const saveCachedCommitIndexUpdate = (commit, cacheIndex) => {
   };
 };
 
-const nextCommit = () => {
-  return {
-    type: GOTO_NEXT_COMMIT,
-  }
-};
-
-const prevCommit = () => {
-  return {
-    type: GOTO_PREV_COMMIT,
-  }
-};
-
 const nextStep = () => {
   return {
     type: GOTO_NEXT_STEP,
@@ -81,7 +66,8 @@ const prevStep = () => {
 };
 
 const isProd = () => {
-  return process.env.NODE_ENV === 'production'
+  // in .env, only REACT_APP_* is imported
+  return process.env.REACT_APP_NODE_ENV === 'production'
 };
 
 const submitRepo = (owner, repo, branch = '') => {
@@ -204,97 +190,6 @@ const browseCommit = (commit) => {
   };
 };
 
-const validateRepo = (owner, repo, branch = '') => {
-  return async (dispatch) => {
-    let res = {};
-    try {
-      let url = isProd() ?
-        '/api/total_commit' :
-        'http://localhost:8000/api/total_commit';
-
-      res = await fetch(`${url}?owner=${owner}&repo=${repo}&sha=${branch}`, {
-        method: 'GET',
-        credentials: isProd() ? 'same-site' : 'include'
-      });
-      if (!res.ok) {
-        dispatch(notifyError('Cannot find repo/branch, or an error occurred'));
-        return;
-      }
-
-      let json = await res.json();
-      dispatch(saveRepoData(owner, repo));
-      dispatch(saveTotalCommit(json.count));
-    } catch (err) {
-      dispatch(notifyError('An error occurred'));
-    }
-  }
-};
-
-const getCurrentCommit = (commit) => {
-  return async (dispatch, getState) => {
-    let res = {};
-    try {
-
-      let state = getState().repo;
-      let url = isProd() ?
-        '/api/commit' :
-        'http://localhost:8000/api/commit';
-
-      res = await fetch(`${url}?owner=${state.owner}&repo=${state.repo}&sha=${state.branch}&total=${state.total}&which=${commit}`, {
-        method: 'GET',
-        credentials: isProd() ? 'same-site' : 'include'
-      });
-      if (!res.ok) {
-        dispatch(notifyError('Cannot get commit or an error occurred'));
-        return;
-      }
-
-      let json = await res.json();
-      dispatch(saveCommitResult(json));
-    } catch (err) {
-      dispatch(notifyError('An error occurred'));
-    }
-  };
-};
-
-const getNextCommit = () => {
-  return async (dispatch, getState) => {
-    let state = getState().repo;
-
-    if (!state.total || !state.commit || state.commit <= 0 || state.commit > state.total) {
-      dispatch(notifyError('Invalid commit!'));
-      return;
-    }
-
-    if (state.commit === state.total) {
-      dispatch(notifyError('At last commit, cannot go forward'));
-      return;
-    }
-
-    dispatch(nextCommit());
-    dispatch(getCurrentCommit(state.commit));
-  };
-};
-
-const getPrevCommit = () => {
-  return async (dispatch, getState) => {
-    let state = getState().repo;
-
-    if (!state.total || !state.commit || state.commit <= 0 || state.commit > state.total) {
-      dispatch(notifyError('Invalid commit!'));
-      return;
-    }
-
-    if (state.commit === 1) {
-      dispatch(notifyError('At first commit, cannot go forward'));
-      return;
-    }
-
-    dispatch(prevCommit());
-    dispatch(getCurrentCommit(state.commit));
-  };
-};
-
 const RepoReducer = (state = defaultState, action) => {
   switch (action.type) {
     case SAVE_REPO_DATA:
@@ -314,28 +209,6 @@ const RepoReducer = (state = defaultState, action) => {
         ...state,
         commit: action.commit,
         cacheIndex: action.cacheIndex,
-      };
-    case GOTO_NEXT_COMMIT:
-      if (!state.total) {
-        throw new Error('invalid total commit');
-      }
-      if (state.commit + 1 > state.total) {
-        return state; // silently fail
-      }
-      return {
-        ...state,
-        commit: state.commit + 1,
-      };
-    case GOTO_PREV_COMMIT:
-      if (!state.total) {
-        throw new Error('invalid total commit');
-      }
-      if (state.commit - 1 <= 0) {
-        return state; // silently fail
-      }
-      return {
-        ...state,
-        commit: state.commit - 1,
       };
     case SAVE_COMMIT_RESULT:
       return {
@@ -393,10 +266,6 @@ const RepoReducer = (state = defaultState, action) => {
 
 export {
   RepoReducer,
-  validateRepo,
-  getCurrentCommit,
-  getNextCommit,
-  getPrevCommit,
 
   submitRepo,
   submitCommitSelection,
