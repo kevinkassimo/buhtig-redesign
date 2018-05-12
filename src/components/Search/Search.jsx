@@ -12,31 +12,19 @@ class Search extends Component {
     const {
       repoState,
       submitRepo,
-      submitCommit,
-      getNextCommit,
-      getPrevCommit,
-
-      goToPrevStep,
     } = this.props;
 
     return (
       <div>
         {repoState.step === 0 &&
           <RepoValidation
-            repoState={repoState}
             submitRepo={submitRepo} />
         }
         {repoState.step === 1 &&
-          <CommitSelection
-            repoState={repoState}
-            goBack={goToPrevStep}
-            submitCommit={submitCommit} />
+          <CommitSelection />
         }
         {repoState.step === 2 &&
-          <ResultView
-            goBack={goToPrevStep}
-            getNextCommit={getNextCommit}
-            getPrevCommit={getPrevCommit} />
+          <ResultView />
         }
       </div>
     );

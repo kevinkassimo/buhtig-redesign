@@ -8,14 +8,14 @@ class CommitSelection extends Component {
     super(props);
 
     this.state = {
-      commit: '',
+      commit: props.repoState.commit ? String(props.repoState.commit) : '',
     };
   }
 
-  validatePositiveNumberOrNothing = (number) => /^[0-9\b]*$/.test(String(number));
+  validatePositiveNumberOrNothing = (number) => /^[0-9]*$/.test(String(number));
 
   validateCommitNumber = (number) => {
-    let re = /^[0-9\b]+$/;
+    let re = /^[0-9]+$/;
     if (re.test(String(number))) {
       let v = +number;
       return !(!v || v > (+this.props.repoState.total || -1));
@@ -24,8 +24,25 @@ class CommitSelection extends Component {
   };
 
   render() {
+    const {
+      repoState,
+
+      submitCommitSelection,
+      goBack,
+    } = this.props;
+
+    console.log(goBack);
+
     return (
       <div>
+        <RaisedButton
+          variant="raised"
+          color="primary"
+          onClick={() => goBack()}>
+          Back
+        </RaisedButton>
+        <h3>On branch "{repoState.sha || 'master'}"</h3>
+        <h3>Total commit count: {repoState.total}</h3>
         <form>
           <TextField
             id="commit"
@@ -45,7 +62,7 @@ class CommitSelection extends Component {
             color="primary"
             disabled={!this.validateCommitNumber(String(this.state.commit))}
             onClick={() => {
-              this.props.submitCommit(+this.state.commit);
+              submitCommitSelection(+this.state.commit);
             }}>
             Next Step!
           </RaisedButton>
@@ -55,10 +72,18 @@ class CommitSelection extends Component {
   }
 }
 
+const mapStateToProps = (state) => {
+  return {
+    repoState: state.repo,
+  };
+};
+
 const mapDispatchToProps = (dispatch) => {
   return {
+    goBack: () => dispatch(actions.goToPrevStep()),
+    submitCommitSelection: (commit) => dispatch(actions.submitCommitSelection(commit)),
     notifyError: (message) => dispatch(actions.notifyError(message)),
   };
 };
 
-export default connect(null, mapDispatchToProps)(CommitSelection);
+export default connect(mapStateToProps, mapDispatchToProps)(CommitSelection);

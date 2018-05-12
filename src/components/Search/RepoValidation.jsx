@@ -61,10 +61,16 @@ class RepoValidation extends Component {
   }
 }
 
+const mapStateToProps = (state) => {
+  return {
+    repoState: state.repo,
+  };
+};
+
 const mapDispatchToProps = (dispatch) => {
   return {
     notifyError: (message) => dispatch(actions.notifyError(message)),
   };
 };
 
-export default connect(null, mapDispatchToProps)(RepoValidation);
+export default connect(mapStateToProps, mapDispatchToProps)(RepoValidation);

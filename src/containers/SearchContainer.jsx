@@ -13,9 +13,8 @@ const mapDispatchToProps = (dispatch) => {
   return {
     notifyError: (message) => dispatch(actions.notifyError(message)),
     submitRepo: (owner, repo, branch = '') => dispatch(actions.submitRepo(owner, repo, branch)),
-    submitCommit: (commit) => dispatch(actions.submitCommit(commit)),
-    getNextCommit: () => dispatch(actions.getNextCommit()),
-    getPrevCommit: () => dispatch(actions.getPrevCommit()),
+    submitCommitSelection: (commit) => dispatch(actions.submitCommitSelection(commit)),
+    getCurrentCommit: (commit) => dispatch(actions.getCurrentCommit(commit)),
   };
 };
 

@@ -2,8 +2,8 @@ import { addNotification as notify } from 'reapop';
 // import { notify } from 'reapop';
 
 const SAVE_REPO_DATA = 'save_repo_data';
-const SAVE_TOTAL_COMMIT = 'save_curr_commit';
-const SAVE_CURR_COMMIT = 'save_curr_commit';
+const SAVE_TOTAL_COMMIT = 'save_total_commit';
+const SAVE_CACHED_COMMIT_INDEX_UPDATE = 'save_cached_commit_index_update';
 const GOTO_NEXT_COMMIT = 'goto_next_commit';
 const GOTO_PREV_COMMIT = 'goto_prev_commit';
 const SAVE_COMMIT_RESULT = 'save_commit_result';
@@ -16,7 +16,7 @@ const defaultState = {
   repo: null,
   branch: '',
   total: 0,
-  commit: 1,
+  commit: 0,
   cache: [],
   cacheIndex: 0,
 };
@@ -34,13 +34,6 @@ const saveRepoData = (owner, repo, branch = '') => {
   };
 };
 
-const saveCurrCommit = (commit) => {
-  return {
-    type: SAVE_CURR_COMMIT,
-    commit,
-  }
-};
-
 const saveTotalCommit = (total) => {
   return {
     type: SAVE_TOTAL_COMMIT,
@@ -52,6 +45,14 @@ const saveCommitResult = (result) => {
   return {
     type: SAVE_COMMIT_RESULT,
     result,
+  };
+};
+
+const saveCachedCommitIndexUpdate = (commit, cacheIndex) => {
+  return {
+    type: SAVE_CACHED_COMMIT_INDEX_UPDATE,
+    commit,
+    cacheIndex,
   };
 };
 
@@ -106,7 +107,7 @@ const submitRepo = (owner, repo, branch = '') => {
       }
 
       let json = await res.json();
-      dispatch(saveRepoData(owner, repo));
+      dispatch(saveRepoData(owner, repo, branch));
       dispatch(saveTotalCommit(json.count));
       dispatch(nextStep());
     } catch (err) {
@@ -115,7 +116,7 @@ const submitRepo = (owner, repo, branch = '') => {
   }
 };
 
-const submitCommit = (commit) => {
+const submitCommitSelection = (commit) => {
   return async (dispatch, getState) => {
     let state = getState().repo;
     if (state.step !== 1) {
@@ -128,14 +129,21 @@ const submitCommit = (commit) => {
       return;
     }
 
-    try {
-      dispatch(saveCurrCommit(commit));
+    if (state.commit && state.cacheIndex && state.cache) { // exists cache
+      if ((state.commit+state.cacheIndex) >= commit && (state.commit-21+state.cacheIndex) < commit) { // check if it is in cache first
+        // Cached version usable
+        dispatch(saveCachedCommitIndexUpdate(commit, state.cacheIndex+state.commit-commit));
+        dispatch(nextStep());
+        return;
+      }
+    }
 
+    try {
       let url = isProd() ?
         '/api/commit' :
         'http://localhost:8000/api/commit';
 
-      let res = await fetch(`${url}?owner=${state.owner}&repo=${state.repo}&total=${state.total}&which=${commit}`, {
+      let res = await fetch(`${url}?owner=${state.owner}&repo=${state.repo}&sha=${state.branch}&total=${state.total}&which=${commit}`, {
         method: 'GET',
         credentials: isProd() ? 'same-site' : 'include'
       });
@@ -147,6 +155,49 @@ const submitCommit = (commit) => {
       let json = await res.json();
       dispatch(saveCommitResult(json));
       dispatch(nextStep());
+    } catch (err) {
+      dispatch(notifyError('An error occurred'));
+    }
+  };
+};
+
+const browseCommit = (commit) => {
+  return async (dispatch, getState) => {
+    let state = getState().repo;
+    if (state.step !== 2) {
+      dispatch(notifyError('Wrong step!'));
+      return;
+    }
+
+    if (!state.total || commit <= 0 || commit > state.total) {
+      dispatch(notifyError('Invalid commit!'));
+      return;
+    }
+
+    if (state.commit && state.cacheIndex && state.cache) { // exists cache
+      if ((state.commit+state.cacheIndex) >= commit && (state.commit-21+state.cacheIndex) < commit) { // check if it is in cache first
+        // Cached version usable
+        dispatch(saveCachedCommitIndexUpdate(commit, state.cacheIndex+state.commit-commit));
+        return;
+      }
+    }
+
+    try {
+      let url = isProd() ?
+        '/api/commit' :
+        'http://localhost:8000/api/commit';
+
+      let res = await fetch(`${url}?owner=${state.owner}&repo=${state.repo}&sha=${state.branch}&total=${state.total}&which=${commit}`, {
+        method: 'GET',
+        credentials: isProd() ? 'same-site' : 'include'
+      });
+      if (!res.ok) {
+        dispatch(notifyError('Cannot get commit, or an error occurred'));
+        return;
+      }
+
+      let json = await res.json();
+      dispatch(saveCommitResult(json));
     } catch (err) {
       dispatch(notifyError('An error occurred'));
     }
@@ -183,7 +234,6 @@ const getCurrentCommit = (commit) => {
   return async (dispatch, getState) => {
     let res = {};
     try {
-      dispatch(saveCurrCommit(commit));
 
       let state = getState().repo;
       let url = isProd() ?
@@ -259,13 +309,11 @@ const RepoReducer = (state = defaultState, action) => {
         ...state,
         total: +action.total || 0,
       };
-    case SAVE_CURR_COMMIT:
-      if (!state.total || action.commit <= 0 || action.commit > state.total) {
-        throw new Error('invalid commit');
-      }
+    case SAVE_CACHED_COMMIT_INDEX_UPDATE:
       return {
         ...state,
-        commit: +action.commit || 0,
+        commit: action.commit,
+        cacheIndex: action.cacheIndex,
       };
     case GOTO_NEXT_COMMIT:
       if (!state.total) {
@@ -292,20 +340,36 @@ const RepoReducer = (state = defaultState, action) => {
     case SAVE_COMMIT_RESULT:
       return {
         ...state,
-        cache: action.result,
+        commit: action.result.curr_commit,
+        cacheIndex: action.result.curr_index,
+        cache: action.result.commits,
       };
     case GOTO_PREV_STEP:
       switch (state.step) {
         case 1:
+          return {
+            ...state,
+            step: 0,
+            // Clear fields to avoid switch branch problems
+            total: 0,
+            commit: 0,
+            cache: [],
+            cacheIndex: 0,
+          };
         case 2:
           return {
             ...state,
-            step: state.step - 1,
+            step: 1,
           };
         default:
           return {
             ...state,
             step: 0,
+            // Clear fields to avoid switch branch problems
+            total: 0,
+            commit: 0,
+            cache: [],
+            cacheIndex: 0,
           };
       }
     case GOTO_NEXT_STEP:
@@ -335,7 +399,8 @@ export {
   getPrevCommit,
 
   submitRepo,
-  submitCommit,
+  submitCommitSelection,
+  browseCommit,
 
   prevStep,
   nextStep,
