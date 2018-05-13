@@ -23,3 +23,5 @@ yarn-error.log*
 /backend/src/buhtig.com/constant
 /backend/src/github.com
 /backend/pkg
+
+.idea/
