@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import queryString from 'query-string';
+import queryString from 'qs';
 import NotificationsSystem from 'reapop';
 import theme from 'reapop-theme-wybo';
 

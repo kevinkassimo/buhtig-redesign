@@ -20,6 +20,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-/backend/src/app/constant
+/backend/src/buhtig.com/constant
 /backend/src/github.com
 /backend/pkg

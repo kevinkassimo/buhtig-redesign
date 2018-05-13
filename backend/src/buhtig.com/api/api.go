@@ -15,8 +15,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/peterhellberg/link"
 
-	"app/constant"
-	"app/handler"
+	"buhtig.com/constant"
+	"buhtig.com/handler"
 )
 
 type User struct {

@@ -6,10 +6,10 @@ import (
 	"github.com/globalsign/mgo"
 	"github.com/gorilla/mux"
 
-	"app/account"
-	"app/api"
-	"app/constant"
-	"app/handler"
+	"buhtig.com/account"
+	"buhtig.com/api"
+	"buhtig.com/constant"
+	"buhtig.com/handler"
 )
 
 func redirect(w http.ResponseWriter, req *http.Request) {

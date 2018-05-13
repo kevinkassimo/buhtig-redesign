@@ -15,9 +15,9 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 
-	"app/constant"
-	"app/githubUrl"
-	"app/handler"
+	"buhtig.com/constant"
+	"buhtig.com/githubUrl"
+	"buhtig.com/handler"
 )
 
 type User struct {
