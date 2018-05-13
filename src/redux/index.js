@@ -1,6 +1,6 @@
 import { addNotification as notify } from 'reapop';
 import { LoginReducer, getUserData, completeOAuth } from './login/login';
-import { RepoReducer, submitCommitSelection, submitRepo, browseCommit, nextStep, prevStep } from './repo/index';
+import { RepoReducer, submitCommitSelection, submitRepo, browseCommit, nextStep, prevStep, clearDataAndNavigateHome } from './repo/index';
 
 const notifyError = (message) => {
   return notify({title: 'Error', status: 'error', message, position: 'tc'});
@@ -20,6 +20,8 @@ export const actions = {
   browseCommit,
   goToNextStep: nextStep,
   goToPrevStep: prevStep,
+
+  clearDataAndNavigateHome,
 
   notifyError,
 };

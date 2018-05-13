@@ -1,0 +1,36 @@
+$black_color: #273238;
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  font-size: 1em;
+
+  color: white;
+  background-color: $black_color;
+
+  display: flex;
+  justify-content: space-around;
+
+  .footer__left {
+    // margin-left: 2em;
+    a {
+      font-weight: bold;
+      color: white;
+      &:hover {
+        color: white;
+      }
+    }
+  }
+
+  .footer__right {
+    // margin-right: 2em;
+    a {
+      font-weight: bold;
+      color: white;
+      &:hover {
+        color: white;
+      }
+    }
+  }
+}

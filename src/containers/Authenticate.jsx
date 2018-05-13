@@ -5,7 +5,7 @@ import { actions } from '../redux';
 export default (WrappedComponent) => {
   class AuthenticationWrapper extends Component {
     componentDidMount() {
-      if (!this.props.user.login) {
+      if (!this.props.user || !this.props.user.login) {
         this.props.getUserData();
       }
     }

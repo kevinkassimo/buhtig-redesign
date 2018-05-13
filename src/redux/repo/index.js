@@ -1,4 +1,5 @@
 import { addNotification as notify } from 'reapop';
+import { push } from 'react-router-redux';
 
 const SAVE_REPO_DATA = 'save_repo_data';
 const SAVE_TOTAL_COMMIT = 'save_total_commit';
@@ -6,6 +7,9 @@ const SAVE_CACHED_COMMIT_INDEX_UPDATE = 'save_cached_commit_index_update';
 const SAVE_COMMIT_RESULT = 'save_commit_result';
 const GOTO_PREV_STEP = 'goto_prev_step';
 const GOTO_NEXT_STEP = 'goto_next_step';
+const CLEAR_REPO_DATA = 'clear_repo_data';
+const START_PROCESSING = 'start_processing';
+const STOP_PROCESSING = 'stop_processing';
 
 const defaultState = {
   step: 0,
@@ -16,10 +20,25 @@ const defaultState = {
   commit: 0,
   cache: [],
   cacheIndex: 0,
+
+  processing: false, // processing request
 };
 
 const notifyError = (message) => {
   return notify({title: 'Error', status: 'error', message, position: 'tc'});
+};
+
+// Processing Locks
+const startProcessing = () => {
+  return {
+    type: START_PROCESSING,
+  };
+};
+
+const stopProcessing = () => {
+  return {
+    type: STOP_PROCESSING,
+  };
 };
 
 const saveRepoData = (owner, repo, branch = '') => {
@@ -73,11 +92,18 @@ const isProd = () => {
 const submitRepo = (owner, repo, branch = '') => {
   return async (dispatch, getState) => {
     let state = getState().repo; // notice should be state.repo!
+
+    if (state.processing) {
+      console.log('Previous actions till processing');
+      return;
+    }
+
     if (state.step !== 0) {
       dispatch(notifyError('Wrong step!'));
       return;
     }
 
+    dispatch(startProcessing());
     try {
       let url = isProd() ?
         '/api/total_commit' :
@@ -89,6 +115,7 @@ const submitRepo = (owner, repo, branch = '') => {
       });
       if (!res.ok) {
         dispatch(notifyError('Cannot find repo/branch, or an error occurred'));
+        dispatch(stopProcessing());
         return;
       }
 
@@ -99,12 +126,19 @@ const submitRepo = (owner, repo, branch = '') => {
     } catch (err) {
       dispatch(notifyError('An error occurred'));
     }
+    dispatch(stopProcessing());
   }
 };
 
 const submitCommitSelection = (commit) => {
   return async (dispatch, getState) => {
     let state = getState().repo;
+
+    if (state.processing) {
+      console.log('Previous actions till processing');
+      return;
+    }
+
     if (state.step !== 1) {
       dispatch(notifyError('Wrong step!'));
       return;
@@ -124,6 +158,7 @@ const submitCommitSelection = (commit) => {
       }
     }
 
+    dispatch(startProcessing());
     try {
       let url = isProd() ?
         '/api/commit' :
@@ -135,6 +170,7 @@ const submitCommitSelection = (commit) => {
       });
       if (!res.ok) {
         dispatch(notifyError('Cannot get commit, or an error occurred'));
+        dispatch(stopProcessing());
         return;
       }
 
@@ -144,12 +180,19 @@ const submitCommitSelection = (commit) => {
     } catch (err) {
       dispatch(notifyError('An error occurred'));
     }
+    dispatch(stopProcessing());
   };
 };
 
 const browseCommit = (commit) => {
   return async (dispatch, getState) => {
     let state = getState().repo;
+
+    if (state.processing) {
+      console.log('Previous actions till processing');
+      return;
+    }
+
     if (state.step !== 2) {
       dispatch(notifyError('Wrong step!'));
       return;
@@ -168,6 +211,8 @@ const browseCommit = (commit) => {
       }
     }
 
+    dispatch(startProcessing());
+
     try {
       let url = isProd() ?
         '/api/commit' :
@@ -179,6 +224,7 @@ const browseCommit = (commit) => {
       });
       if (!res.ok) {
         dispatch(notifyError('Cannot get commit, or an error occurred'));
+        dispatch(stopProcessing());
         return;
       }
 
@@ -187,6 +233,20 @@ const browseCommit = (commit) => {
     } catch (err) {
       dispatch(notifyError('An error occurred'));
     }
+    dispatch(stopProcessing());
+  };
+};
+
+const clearData = () => {
+  return {
+    type: CLEAR_REPO_DATA,
+  };
+};
+
+const clearDataAndNavigateHome = () => {
+  return (dispatch) => {
+    dispatch(clearData());
+    dispatch(push('/'));
   };
 };
 
@@ -259,6 +319,18 @@ const RepoReducer = (state = defaultState, action) => {
             step: 0,
           };
       }
+    case CLEAR_REPO_DATA:
+      return { ...defaultState };
+    case START_PROCESSING:
+      return {
+        ...state,
+        processing: true,
+      };
+    case STOP_PROCESSING:
+      return {
+        ...state,
+        processing: false,
+      };
     default:
       return state;
   }
@@ -273,4 +345,6 @@ export {
 
   prevStep,
   nextStep,
+
+  clearDataAndNavigateHome,
 };

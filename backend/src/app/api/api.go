@@ -213,12 +213,21 @@ func NewAPIRouter(router *mux.Router, session *mgo.Session) {
 		body, err := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 
+		type commitCommitSubPersonStruct struct {
+			Name string `json:"name"`
+			Email string `json:"email"`
+			Date string `json:"date"`
+		}
+
 		type commitCommitStruct struct {
 			Message string `json:"message"`
+			Author commitCommitSubPersonStruct `json:"author"`
+			Committer commitCommitSubPersonStruct `json:"committer"`
 		}
 		type commitPersonStruct struct {
 			Login string `json:"login"`
 			AvatarURL string `json:"avatar_url"`
+			HtmlURL string `json:"html_url"`
 		}
 		type commitStruct struct {
 			Commit commitCommitStruct `json:"commit"`

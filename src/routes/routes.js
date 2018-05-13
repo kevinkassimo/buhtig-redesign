@@ -16,6 +16,7 @@ const Routes = ({ props }) => (
   <div>
     <NotificationsSystem theme={theme} />
     <Route path="/" component={Header} />
+    <Route exact path="/" component={() => <div className="home__mask"/>} />
     <Switch>
       <Route exact path="/" component={Home} />
       <Route exact path="/code" render={(props) => {

@@ -43,7 +43,8 @@ const completeOAuth = (code) => {
   }
 };
 
-const getUserData = () => {
+// add optional navigate on failure handle to navigate to home when no search
+const getUserData = (shouldNavigateHomeOnFailure = true) => {
   return async (dispatch) => {
     try {
       let url = isProd() ?
@@ -55,7 +56,9 @@ const getUserData = () => {
         credentials: isProd() ? 'same-site' : 'include'
       });
       if (!res.ok) {
-        dispatch(push('/'));
+        if (shouldNavigateHomeOnFailure) {
+          dispatch(push('/'));
+        }
         return
       }
       let json = await res.json();

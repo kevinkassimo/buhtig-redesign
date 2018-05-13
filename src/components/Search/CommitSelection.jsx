@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { TextField, RaisedButton } from 'material-ui';
+import { TextField, RaisedButton, Card } from 'material-ui';
 import { connect } from 'react-redux';
 import { actions } from '../../redux';
 
@@ -35,38 +35,46 @@ class CommitSelection extends Component {
 
     return (
       <div>
+        <Card className="searchcard">
+          <h1>Enter Commit Number</h1>
+          <h4>For "{repoState.owner}/{repoState.repo}"</h4>
+          <h4>On branch "{repoState.sha || 'master'}"</h4>
+          <h4>There are {repoState.total} commits in total</h4>
+          <form>
+            <div>
+              <TextField
+                id="commit"
+                floatingLabelText="Commit Number (default to 1)"
+                value={this.state.commit}
+                required
+                hintText="e.g. 1 (for first commit)"
+                onChange={({ target }) => {
+                  if (this.validatePositiveNumberOrNothing(target.value)) {
+                    this.setState({commit: String(target.value)});
+                  }
+                }}
+                margin="normal"
+              />
+            </div>
+            <div>
+              <RaisedButton
+                secondary={true}
+                label="Search"
+                className="searchcard__button"
+                disabled={!this.validateCommitNumber(String(this.state.commit))}
+                onClick={() => {
+                  submitCommitSelection(+this.state.commit);
+                }}
+              />
+            </div>
+          </form>
+        </Card>
         <RaisedButton
-          variant="raised"
-          color="primary"
-          onClick={() => goBack()}>
-          Back
-        </RaisedButton>
-        <h3>On branch "{repoState.sha || 'master'}"</h3>
-        <h3>Total commit count: {repoState.total}</h3>
-        <form>
-          <TextField
-            id="commit"
-            label="Commit Number (default to 1)"
-            value={this.state.commit}
-            required
-            placeholder="e.g. 1 (for first commit)"
-            onChange={({ target }) => {
-              if (this.validatePositiveNumberOrNothing(target.value)) {
-                this.setState({commit: String(target.value)});
-              }
-            }}
-            margin="normal"
-          />
-          <RaisedButton
-            variant="raised"
-            color="primary"
-            disabled={!this.validateCommitNumber(String(this.state.commit))}
-            onClick={() => {
-              submitCommitSelection(+this.state.commit);
-            }}>
-            Next Step!
-          </RaisedButton>
-        </form>
+          secondary={true}
+          label="Back"
+          className="searchcard__backButton"
+          onClick={() => goBack()}
+        />
       </div>
     )
   }
