@@ -28,8 +28,9 @@ const completeOAuth = (code) => {
 
       let res = await fetch(`${url}?code=${code}`, {
         method: 'POST',
-        credentials: isProd() ? 'same-site' : 'include',
+        credentials: isProd() ? 'same-origin' : 'include', // stupid thing... same-site is chrome only
       });
+
       if (!res.ok) {
         dispatch(push('/'));
         return;

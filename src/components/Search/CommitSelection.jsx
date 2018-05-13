@@ -31,8 +31,6 @@ class CommitSelection extends Component {
       goBack,
     } = this.props;
 
-    console.log(goBack);
-
     return (
       <div>
         <Card className="searchcard">

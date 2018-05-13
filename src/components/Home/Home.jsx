@@ -27,7 +27,7 @@ class Home extends Component {
       return (
         <div>
           <RaisedButton
-            href="https://github.com/login/oauth/authorize?client_id=bf77f91ed090876cc930&scope="
+            href="https://github.com/login/oauth/authorize?client_id=4e5bd387bb42a961c648&scope="
             label="Start with Github OAuth"
             secondary={true}
           />

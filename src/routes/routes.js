@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import queryString from 'qs';
+import qs from 'qs';
 import NotificationsSystem from 'reapop';
 import theme from 'reapop-theme-wybo';
 
@@ -20,7 +20,7 @@ const Routes = ({ props }) => (
     <Switch>
       <Route exact path="/" component={Home} />
       <Route exact path="/code" render={(props) => {
-        let params = queryString.parse(props.location.search);
+        let params = qs.parse(props.location.search, { ignoreQueryPrefix: true });
         return <CodeContainer code={params.code} />;
       }} />
       <Route path="/search" component={Authenticate(Search)} />

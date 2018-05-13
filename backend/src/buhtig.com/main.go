@@ -35,14 +35,12 @@ func main() {
 		})
 		http.ListenAndServe(":8000", router)
 	} else {
-		//router.PathPrefix("/").Handler(http.FileServer(http.Dir(constant.STATIC_DIR)))
-		//router.Handle("/", http.FileServer(http.Dir(constant.STATIC_DIR)))
 		// "/" counts as not found
 		router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			filePath := constant.STATIC_DIR + r.URL.Path
 			if _, err := os.Stat(filePath); os.IsNotExist(err) {
 				http.ServeFile(w, r, "/site/index.html")
-		  	} else {
+			} else {
 				http.ServeFile(w, r, filePath)
 			}
 		})

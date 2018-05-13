@@ -111,7 +111,7 @@ const submitRepo = (owner, repo, branch = '') => {
 
       let res = await fetch(`${url}?owner=${owner}&repo=${repo}&sha=${branch}`, {
         method: 'GET',
-        credentials: isProd() ? 'same-site' : 'include'
+        credentials: isProd() ? 'same-origin' : 'include'
       });
       if (!res.ok) {
         dispatch(notifyError('Cannot find repo/branch, or an error occurred'));
@@ -166,7 +166,7 @@ const submitCommitSelection = (commit) => {
 
       let res = await fetch(`${url}?owner=${state.owner}&repo=${state.repo}&sha=${state.branch}&total=${state.total}&which=${commit}`, {
         method: 'GET',
-        credentials: isProd() ? 'same-site' : 'include'
+        credentials: isProd() ? 'same-origin' : 'include'
       });
       if (!res.ok) {
         dispatch(notifyError('Cannot get commit, or an error occurred'));
@@ -220,7 +220,7 @@ const browseCommit = (commit) => {
 
       let res = await fetch(`${url}?owner=${state.owner}&repo=${state.repo}&sha=${state.branch}&total=${state.total}&which=${commit}`, {
         method: 'GET',
-        credentials: isProd() ? 'same-site' : 'include'
+        credentials: isProd() ? 'same-origin' : 'include'
       });
       if (!res.ok) {
         dispatch(notifyError('Cannot get commit, or an error occurred'));
