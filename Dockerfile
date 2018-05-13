@@ -9,5 +9,5 @@ WORKDIR /app
 ENV GOPATH /app
 
 RUN cd src && go get -d buhtig.com
-RUN go build -o app src/main.go
+RUN go build -o main src/buhtig.com/main.go
 CMD ["/app/main"]
