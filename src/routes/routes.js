@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import qs from 'qs';
 import NotificationsSystem from 'reapop';
@@ -10,7 +10,13 @@ import CodeContainer from "../components/Code/Code";
 import Header from '../components/Header/Header';
 import Search from '../components/Search/Search';
 import Authenticate from '../containers/Authenticate';
+import withTracker from './withTracker';
 
+const GATracker = withTracker(class extends Component {
+  render() {
+    return <div />
+  }
+});
 
 const Routes = ({ props }) => (
   <div>
@@ -26,6 +32,7 @@ const Routes = ({ props }) => (
       <Route path="/search" component={Authenticate(Search)} />
     </Switch>
     <Route path="/" component={Footer} />
+    <Route path="/" component={GATracker} />
   </div>
 );
 

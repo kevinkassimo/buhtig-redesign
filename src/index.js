@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { ConnectedRouter, routerReducer, routerMiddleware } from 'react-router-redux'
 import thunk from 'redux-thunk';
