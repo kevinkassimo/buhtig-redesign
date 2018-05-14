@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { RaisedButton, FontIcon } from 'material-ui';
+import { RaisedButton } from 'material-ui';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import * as octicons from 'octicons';
+import DocumentTitle from 'react-document-title';
 import { actions } from '../../redux/index';
+
 
 class Home extends Component {
   constructor(props) {
@@ -39,17 +41,19 @@ class Home extends Component {
 
   render() {
     return (
-      <div className="home">
-        <div
-          className="home__logo-wrapper"
-          dangerouslySetInnerHTML={{
-            __html: octicons['mark-github'].toSVG({ id: "home__logo", transform: 'rotate(180)' }),
-          }} />
-        <h1>buHtiG</h1>
-        <h4>Go to N-th Commit of Github Repositories</h4>
-        <h5>(Now supports <em>Branches</em>!)</h5>
-        {this.renderButton()}
-      </div>
+      <DocumentTitle title="buHtiG: Github Commit View">
+        <div className="home">
+          <div
+            className="home__logo-wrapper"
+            dangerouslySetInnerHTML={{
+              __html: octicons['mark-github'].toSVG({ id: "home__logo", transform: 'rotate(180)' }),
+            }} />
+          <h1>buHtiG</h1>
+          <h4>Go to N-th Commit of Github Repositories</h4>
+          <h5>(Now supports <em>Branches</em>!)</h5>
+          {this.renderButton()}
+        </div>
+      </DocumentTitle>
     );
   }
 }

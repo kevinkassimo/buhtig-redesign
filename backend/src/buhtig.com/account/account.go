@@ -55,7 +55,7 @@ func authMiddleware(next http.Handler) http.Handler {
 		})
 
 		if err != nil {
-			handler.SendBadRequest(w, "bad jwt")
+			handler.SendUnauthorized(w, "bad jwt")
 			return
 		}
 
@@ -63,7 +63,7 @@ func authMiddleware(next http.Handler) http.Handler {
 			context.Set(r, "login", claims["login"]) // set context
 			next.ServeHTTP(w, r)
 		} else {
-			handler.SendBadRequest(w, "bad jwt")
+			handler.SendUnauthorized(w, "bad jwt claims")
 			return
 		}
 	})

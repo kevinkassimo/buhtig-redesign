@@ -12,6 +12,7 @@ import Search from '../components/Search/Search';
 import Authenticate from '../containers/Authenticate';
 import withTracker from './withTracker';
 
+// Dummy component created solely for tracking
 const GATracker = withTracker(class extends Component {
   render() {
     return <div />
@@ -30,6 +31,7 @@ const Routes = ({ props }) => (
         return <CodeContainer code={params.code} />;
       }} />
       <Route path="/search" component={Authenticate(Search)} />
+      <Redirect to="/" {/* fallback */} />
     </Switch>
     <Route path="/" component={Footer} />
     <Route path="/" component={GATracker} />

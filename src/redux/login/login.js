@@ -54,7 +54,7 @@ const getUserData = (shouldNavigateHomeOnFailure = true) => {
 
       let res = await fetch(`${url}`, {
         method: 'GET',
-        credentials: isProd() ? 'same-site' : 'include'
+        credentials: isProd() ? 'same-origin' : 'include'
       });
       if (!res.ok) {
         if (shouldNavigateHomeOnFailure) {

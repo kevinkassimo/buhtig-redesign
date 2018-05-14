@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import DocumentTitle from 'react-document-title';
 
 import CommitSelection from './CommitSelection';
 import RepoValidation from './RepoValidation';
@@ -18,18 +19,20 @@ class Search extends Component {
     } = this.props;
 
     return (
-      <div>
-        {repoState.step === 0 &&
+      <DocumentTitle title="buHtiG: Search">
+        <div>
+          {repoState.step === 0 &&
           <RepoValidation
             submitRepo={submitRepo} />
-        }
-        {repoState.step === 1 &&
+          }
+          {repoState.step === 1 &&
           <CommitSelection />
-        }
-        {repoState.step === 2 &&
+          }
+          {repoState.step === 2 &&
           <ResultView />
-        }
-      </div>
+          }
+        </div>
+      </DocumentTitle>
     );
   }
 }

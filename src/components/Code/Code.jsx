@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { actions } from '../../redux/index'
 import { connect } from 'react-redux';
+import DocumentTitle from 'react-document-title';
 
 class Code extends Component {
   constructor(props) {
@@ -13,7 +14,9 @@ class Code extends Component {
 
   render() {
     return (
-      <div />
+      <DocumentTitle title="buHtiG: Verifying...">
+        <div />
+      </DocumentTitle>
     );
   }
 }
