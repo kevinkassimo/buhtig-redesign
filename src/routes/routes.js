@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, Redirect } from 'react-router-dom';
 import qs from 'qs';
 import NotificationsSystem from 'reapop';
 import theme from 'reapop-theme-wybo';
