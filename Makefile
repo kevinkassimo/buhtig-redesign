@@ -14,8 +14,8 @@ kill:
 unbuild-img:
 	docker rmi kevinkassimo/buhtig:latest
 upgrade:
-    docker stop buhtig
-    docker rm buhtig
-    docker rmi kevinkassimo/buhtig:latest
-    docker build -t kevinkassimo/buhtig .
-    docker run -d --net buhtig-net -p 8000:80 --name buhtig kevinkassimo/buhtig
+	docker stop buhtig
+	docker rm buhtig
+	docker rmi kevinkassimo/buhtig:latest
+	docker build -t kevinkassimo/buhtig .
+	docker run -d --net buhtig-net -p 8000:80 --name buhtig kevinkassimo/buhtig
