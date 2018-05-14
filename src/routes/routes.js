@@ -31,7 +31,7 @@ const Routes = ({ props }) => (
         return <CodeContainer code={params.code} />;
       }} />
       <Route path="/search" component={Authenticate(Search)} />
-      <Redirect to="/" {/* fallback */} />
+      <Redirect to="/" />
     </Switch>
     <Route path="/" component={Footer} />
     <Route path="/" component={GATracker} />
