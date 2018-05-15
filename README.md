@@ -1,5 +1,8 @@
 # buHtiG: Go To Any Commit, this time Redesigned
 
+## Seeking for New Feature Requests
+I am considering further expanding the feature of this site, probably includes e.g. comparing 2 commits. Feel free to __raise an issue__ if you have there is a feature wanted, or if you encountered a bug! (site may be unstable, since it was created under 3 days after all...)  
+
 ## What is this
 A small online tool for getting N-th commit (sequentially) of a github repository
 Link: [https://buhtig.com](https://buhtig.com)
