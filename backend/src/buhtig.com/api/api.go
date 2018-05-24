@@ -1,6 +1,8 @@
 package api
 
 import (
+	"os"
+	"log"
 	"net/http"
 	"net/url"
 	"fmt"
@@ -18,6 +20,13 @@ import (
 	"buhtig.com/constant"
 	"buhtig.com/handler"
 )
+
+var logFile *os.File;
+
+func init() {
+	logFile, _ = os.OpenFile("repo.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	log.SetOutput(logFile)
+}
 
 type User struct {
 	ID        bson.ObjectId `bson:"_id,omitempty"`
@@ -113,7 +122,15 @@ func NewAPIRouter(router *mux.Router, session *mgo.Session) {
 			handler.SendServerError(w, "request error: "+err.Error())
 			return
 		}
+		if resp.StatusCode > 299 {
+			handler.SendBadRequest(w, "No such repo or rate limit depleted")
+			resp.Body.Close()
+			return
+		}
 		defer resp.Body.Close()
+
+		// logging
+		log.Printf("%s/%s\n", owner, repo)
 
 		commitCount := -1 // negative means bad value
 		for _, l := range link.ParseResponse(resp) {
@@ -208,6 +225,11 @@ func NewAPIRouter(router *mux.Router, session *mgo.Session) {
 		resp, err := httpClient.Do(req)
 		if err != nil {
 			handler.SendServerError(w, "request error: "+err.Error())
+			return
+		}
+		if resp.StatusCode > 299 {
+			handler.SendBadRequest(w, "No such repo or rate limit depleted")
+			resp.Body.Close()
 			return
 		}
 		body, err := ioutil.ReadAll(resp.Body)
